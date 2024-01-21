@@ -1,9 +1,9 @@
 # stock_price_prediction
 Tata Global Stock Price Prediction using KNN Implementation
-Stock: Quandl
+Stock/ Dataset Source: Quandl
 Main Targets:
-1. Regression:
-   Close Target
-2. Classification:
+1. Regression Problem: To predict the Close Target.
+2. Classification Problem: To predict whether to BUY or SELL the stock.
    BUY:+1
    SELL:-1
+(Approach point) K using GridsearchCV
