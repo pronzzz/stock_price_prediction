@@ -1,0 +1,19 @@
+
+Tata Global Stock Price Prediction using KNN Implementation
+Stock/ Dataset Source: Quandl
+Main Targets:
+1. Regression Problem: To predict the Close Target.
+2. Classification Problem: To predict whether to BUY or SELL the stock.
+   BUY:+1
+   SELL:-1
+(Approach point) K using GridsearchCV
+
+﻿This code is a comprehensive demonstration of K-Nearest Neighbors algorithm for machine learning tasks. It includes both classification and regression problems, making it a valuable resource for individuals interested in exploring the capabilities of KNN.
+
+The code begins by importing essential libraries, including Pandas, NumPy, Matplotlib, and Quandl. It then fetches real-world stock data fromQuandl and performs data preprocessing before splitting the data into training and testing sets.
+
+For the classification task, the code extracts features and prepares the target variable, which indicates whether to buy or sell a stock. It applies K-Nearest Neighbors classifier with grid search cross-validation to optimize hyperparameters and evaluates its performance on both training and test data.
+
+In the regression task, the code predicts the closing stock prices using K-Nearest Neighbor regression. Similar to the classification problem, grid search cross-validation is employed to find the optimal hyperparameters. The code calculates the root mean squared error (RMSE) as a metric to assess the model's performance.
+
+Finally, the code presents the actual and predicted values for both classification and regression tasks, providing a clear demonstration of KNN algorithm's application in real-world scenarios.﻿
