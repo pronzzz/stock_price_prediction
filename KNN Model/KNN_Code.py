@@ -1,93 +1,198 @@
-import pandas as pd
+﻿ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import quandl
+def data_collection():
+    data = quandl.get("NSE/TATAGLOBAL")
+    return data
 
-data = quandl.get("NSE/TATAGLOBAL")
+def data_preprocessing(data):
+    """
+    Performs data preprocessing steps like creating new features and cleaning the data.
 
-data.head(10)
+    Args:
+        data: The data to be preprocessed.
 
-plt.figure(figsize=(16,8))
-plt.plot(data['Close'], label='Closing Price')
+    Returns:
+        The preprocessed data.
+    """
+    # Create new features
+    data["open_minus_close"] = data["Open"] - data["Close"]
+    data["high_minus_low"] = data["High"] - data["Low"]
+    # Drop rows with missing values
+    data = data.dropna()
+    return data
 
-"""Classification Problem : Buy(+1) or sell(-1) the stock"""
+def feature_extraction(data):
+    """
+    Extracts features from the data.
 
-# @title Default title text
-data['Open - Close']= data['Open'] - data['Close']
-data['High - Low']= data['High'] - data['Low']
-data = data.dropna()
+    Args:
+        data: The data to extract features from.
 
-"""Input Features to predict whether customer should buy or sell the stock"""
+    Returns:
+        The extracted features.
+    """
+    x = data[["open_minus_close", "high_minus_low"]]
+    return x
 
-x = data[['Open - Close', 'High - Low']]
-x.head()
+def target_encoding(data):
+    """
+    Encodes the target variable into a binary representation.
 
-"""Intention is to store +1 for the buy signal and -1 fro the sell signal. The target is 'Y' for classification task."""
+    Args:
+        data: The data to encode the target variable for.
 
-Y = np.where(data['Close'].shift(-1)>data['Close'],1,-1)
+    Returns:
+        The encoded target variable.
+    """
+    y = np.where(data["Close"].shift(-1) > data["Close"], 1, -1)
+    return y
 
-Y
+def data_splitting(x, y):
+    """
+    Splits the data into training and testing sets.
 
-from sklearn.model_selection import train_test_split
-x_train, x_test, y_train, y_test = train_test_split(x,Y,test_size=0.25, random_state = 44)
+    Args:
+        x: The features.
+        y: The target variable.
 
-"""Implementation of KNN Classifier"""
+    Returns:
+        The training and testing sets.
+    """
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=44)
+    return x_train, x_test, y_train, y_test
 
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn import neighbors
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import accuracy_score
+def gridsearch_knn(x_train, y_train):
+    """
+    Performs grid search to find the optimal hyperparameters for the KNN classifier.
 
-#using gridseaarch to find the parameter
-params = {'n_neighbors':[2,3,4,5,6,7,8,9,10,11,12,13,14,15]}
-knn = neighbors.KNeighborsClassifier()
-model = GridSearchCV(knn, params, cv=5)
+    Args:
+        x_train: The training features.
+        y_train: The training target variable.
 
-#fit the model
-model.fit(x_train, y_train)
+    Returns:
+        The KNN classifier with the optimal hyperparameters.
+    """
+    params = {'n_neighbors': [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}
+    knn = neighbors.KNeighborsClassifier()
+    model = GridSearchCV(knn, params, cv=5)
+    model.fit(x_train, y_train)
+    return model
 
-#Accuracy Score
-accuracy_train = accuracy_score(y_train, model.predict(x_train))
-accuracy_test = accuracy_score(y_test, model.predict(x_test))
+def training_testing(model, x_train, y_train, x_test, y_test):
+    """
+    Trains and tests the KNN classifier.
 
-print('Train_data Accuracy: %.2f' %accuracy_train)
-print('Test_data Accuracy: %.2f' %accuracy_test)
+    Args:
+        model: The KNN classifier to be trained and tested.
+        x_train: The training features.
+        y_train: The training target variable.
+        x_test: The testing features.
+        y_test: The testing target variable.
 
-prediction_classification = model.predict(x_test)
+    Returns:
+        The training and testing accuracy scores.
+    """
+    # Train the model
+    model.fit(x_train, y_train)
 
-actual_predicted_data = pd.DataFrame({'Actual Class':y_test, 'Predicted Class':prediction_classification})
+    # Test the model
+    y_pred = model.predict(x_test)
 
-actual_predicted_data.head(10)
+    # Calculate the accuracy scores
+    accuracy_train = accuracy_score(y_train, model.predict(x_train))
+    accuracy_test = accuracy_score(y_test, y_pred)
 
-"""Regression Problem: KNN"""
+    return accuracy_train, accuracy_test
 
-y = data['Close']
+def data_collection_knn_regression():
+    data = quandl.get("NSE/TATAGLOBAL")
+    return data
 
-y
+def data_preprocessing_knn_regression(data):
+    """
+    Performs data preprocessing steps for the KNN regression model.
 
-"""Implementation of KNN Regression"""
+    Args:
+        data: The data to be preprocessed.
 
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn import neighbors
+    Returns:
+        The preprocessed data.
+    """
+    # Create new features
+    data["open_minus_close"] = data["Open"] - data["Close"]
+    data["high_minus_low"] = data["High"] - data["Low"]
+    # Drop rows with missing values
+    data = data.dropna()
+    # Extract the target variable
+    y = data["Close"]
+    # Extract the features
+    x = data[["open_minus_close", "high_minus_low"]]
+    # Split the data into training and testing sets
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=44)
+    return x_train, x_test, y_train, y_test
 
-x_train_reg, x_test_reg, y_train_reg, y_test_reg = train_test_split(x, y, test_size=0.25, random_state=44)
+def gridsearch_knn_regression(x_train, y_train):
+    """
+    Performs grid search to find the optimal hyperparameters for the KNN regression model.
 
-#using gridseaarch to find the parameter
-params = {'n_neighbors':[2,3,4,5,6,7,8,9,10,11,12,13,14,15]}
-knn_reg = neighbors.KNeighborsRegressor()
-model_reg = GridSearchCV(knn_reg, params, cv=5)
+    Args:
+        x_train: The training features.
+        y_train: The training target variable.
 
-#fit the model
-model_reg.fit(x_train_reg, y_train_reg)
-predictions = model_reg.predict(x_train_reg)
+    Returns:
+        The KNN regression model with the optimal hyperparameters.
+    """
+    params = {'n_neighbors': [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}
+    knn_reg = neighbors.KNeighborsRegressor()
+    model_reg = GridSearchCV(knn_reg, params, cv=5)
+    model_reg.fit(x_train, y_train)
+    return model_reg
 
-print(predictions)
+def training_testing_regression(model_reg, x_train, y_train, x_test, y_test):
+    """
+    Trains and tests the KNN regression model.
 
-#rmse
-rms=np.sqrt(np.mean(np.power((np.array(y_test)-np.array(predictions)),2)))
-rms
+    Args:
+        model_reg: The KNN regression model to be trained and tested.
+        x_train: The training features.
+        y_train: The training target variable.
+        x_test: The testing features.
+        y_test: The testing target variable.
 
-valid = pd.DataFrame({'Actual Close':y_test_reg, 'Predicted CLose Value':predictions})
+    Returns:
+        The root mean squared error (RMSE) score.
+    """
+    # Train the model
+    model_reg.fit(x_train, y_train)
 
-valid.head(10)
+    # Test the model
+    predictions = model_reg.predict(x_test)
+
+    # Calculate the RMSE score
+    rms = np.sqrt(np.mean(np.power((np.array(y_test) - np.array(predictions)), 2)))
+
+    return rms
+
+def main():
+    # Classification Problem: Buy(+1) or sell(-1) the stock
+    data = data_collection()
+    data = data_preprocessing(data)
+    x = feature_extraction(data)
+    y = target_encoding(data)
+    x_train, x_test, y_train, y_test = data_splitting(x, y)
+    model = gridsearch_knn(x_train, y_train)
+    accuracy_train, accuracy_test = training_testing(model, x_train, y_train, x_test, y_test)
+    print("Train data accuracy:", accuracy_train)
+    print("Test data accuracy:", accuracy_test)
+
+    # Regression Problem: KNN
+    data = data_collection_knn_regression()
+    x_train, x_test, y_train, y_test = data_preprocessing_knn_regression(data)
+    model_reg = gridsearch_knn_regression(x_train, y_train)
+    rms = training_testing_regression(model_reg, x_train, y_train, x_test, y_test)
+    print("Root mean squared error:", rms)
+
+if __name__ == "__main__":
+    main()﻿
